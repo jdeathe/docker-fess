@@ -1,0 +1,22 @@
+version: "2.0"
+networks:
+  fess_t1:
+    driver: "bridge"
+services:
+  proxy:
+    build: "./caddy"
+    links:
+      - "fess"
+    networks:
+      - "fess_t1"
+    ports:
+      - "80:8080"
+      - "443:2015"
+    restart: "always"
+  fess:
+    build: "./fess"
+    networks:
+      fess_t1:
+        aliases:
+          - "fess"
+    restart: "always"

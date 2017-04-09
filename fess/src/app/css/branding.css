@@ -1,0 +1,30 @@
+footer{background-color:rgba(0,0,0,.04);border-top:1px solid rgba(0,0,0,.08);padding-top:.66em;height:auto;}
+footer a{color:#818a91;}
+dd{margin-bottom:2rem;margin-left:4em!important;}
+h1.mainLogo{height:60px;margin-bottom:1em;}
+.mainLogo img{width:auto;height:60px;}
+.searchFormBox .notification{color:#666666;}
+.navbar .container{max-width:none!important;}
+.navbar .dropdown-menu{left:inherit;right:0;}
+.navbar-brand img{padding-top:0px;height:32px;}
+.navbar-light.bg-faded{border-bottom:1px solid #e7e7e7;}
+#result aside{padding:.33rem 1rem;background-color:#f7f7f9;}
+#result .list-group-item{padding:.33rem 0;background-color:transparent;border:none;}
+#result .info{color:#666666;}
+#searchButton.btn.btn-primary{color:#555555;background-color:#dddddd;border-color:#cccccc;}
+#searchButton.btn.btn-primary:focus{color:#1e1e1e;background-color:#dddddd;border-color:#31708f;}
+#searchButton.btn.btn-primary:hover{color:#1e1e1e;background-color:#dddddd;border-color:#ababab;}
+.navbar #searchButton.btn.btn-primary{color:rgba(255,255,255,.33);background-color:rgba(255,255,255,.13);border-color:rgba(255,255,255,0);margin-left:0;}
+.navbar #searchButton.btn.btn-primary:hover{color:rgba(255,255,255,.75);background-color:rgba(255,255,255,.15);border-color:rgba(255,255,255,0.13);}
+#searchOptions{z-index:1050;}
+#searchOptions .container{color:#1e1e1e;background-color:rgba(247,247,249,.88);padding-top:20px;}
+#searchOptions.active .container{bottom:auto;}
+#query.form-control{color:rgba(255,255,255,.75);background-color:rgba(255,255,255,.13);border:.0625rem solid transparent;}
+#query.form-control:focus{color:rgba(255,255,255,.88);background-color:rgba(255,255,255,.15);border:.0625rem solid rgba(255,255,255,.25);}
+.login-page,.register-page{background-color:#ecf0f5!important;}
+.login-box-msg,.register-box-msg{font-weight:bold;}
+.login-box .notification{color:#444444;margin-bottom:.33rem;}
+.login-logo img{width:auto;height:40px;}
+.login-page footer,.register-page footer{background-color:#ffffff;border-top-color:#d2d6de;}
+@media (max-width: 47.9em)
+.navbar-brand img{width:auto;height:24px;}
