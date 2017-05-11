@@ -1,11 +1,13 @@
 FROM centos:7.3.1611
 
-ARG FESS_VERSION="11.0.3"
+ARG FESS_VERSION="11.1.0"
 ARG FESS_FILENAME="fess-${FESS_VERSION}.zip"
 ARG FESS_RELEASE_URI="https://github.com/codelibs/fess/releases/download/fess-${FESS_VERSION}/${FESS_FILENAME}"
 
 RUN rpm --rebuilddb \
-	&& yum --setopt=tsflags=nodocs -y install \
+	&& yum -y install \
+			--setopt=tsflags=nodocs \
+			--disableplugin=fastestmirror \
 		java-1.8.0-openjdk-headless \
 		unzip \
 	&& curl -sOL ${FESS_RELEASE_URI} \
