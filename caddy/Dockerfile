@@ -1,4 +1,4 @@
-FROM jdeathe/caddy:1.0.0
+FROM jdeathe/caddy:1.1.0
 
 USER root
 
