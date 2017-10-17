@@ -2,7 +2,7 @@
 
 [FESS](http://fess.codelibs.org/) is Full tExt Search System.
 
-[Caddy](https://caddyserver.com/) is used as a simple, reverse proxy and to provide SSL/TLS termination. This might be replaced with an HAProxy solution.
+[HAProxy](http://www.haproxy.org/) is used as a, reverse proxy and to provide SSL/TLS termination.
 
 Currently includes a custom, simplified, search UI however it might be removed and restricted to an API only front-end in the future.
 
