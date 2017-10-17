@@ -4,15 +4,139 @@ networks:
     driver: "bridge"
 services:
   proxy:
-    build: "./caddy"
+    command: '"printf -- \"%s\n\" \"$${HAPROXY_CERTIFICATE}\" > /usr/local/etc/haproxy/localhost.localdomain.crt; printf -- \"%s\n\" \"$${HAPROXY_CONFIG}\" > /usr/local/etc/haproxy/haproxy.cfg && haproxy -c -f /usr/local/etc/haproxy/haproxy.cfg && /docker-entrypoint.sh haproxy -f /usr/local/etc/haproxy/haproxy.cfg"'
+    entrypoint: "/bin/sh -c"
+    environment:
+      HAPROXY_CONFIG: |-
+        global
+        	group root
+        	log 127.0.0.1 local2
+        	maxconn 4096
+        	maxsslrate 128
+        	nbproc 1
+        	spread-checks 4
+        	ssl-default-bind-ciphers ECDHE-ECDSA-CHACHA20-POLY1305:ECDHE-RSA-CHACHA20-POLY1305:ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384:DHE-RSA-AES128-GCM-SHA256:DHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-AES128-SHA256:ECDHE-RSA-AES128-SHA256:ECDHE-ECDSA-AES128-SHA:ECDHE-RSA-AES256-SHA384:ECDHE-RSA-AES128-SHA:ECDHE-ECDSA-AES256-SHA384:ECDHE-ECDSA-AES256-SHA:ECDHE-RSA-AES256-SHA:DHE-RSA-AES128-SHA256:DHE-RSA-AES128-SHA:DHE-RSA-AES256-SHA256:DHE-RSA-AES256-SHA:ECDHE-ECDSA-DES-CBC3-SHA:ECDHE-RSA-DES-CBC3-SHA:EDH-RSA-DES-CBC3-SHA:AES128-GCM-SHA256:AES256-GCM-SHA384:AES128-SHA256:AES256-SHA256:AES128-SHA:AES256-SHA:DES-CBC3-SHA:!DSS
+        	ssl-default-server-ciphers ECDHE-ECDSA-CHACHA20-POLY1305:ECDHE-RSA-CHACHA20-POLY1305:ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384:DHE-RSA-AES128-GCM-SHA256:DHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-AES128-SHA256:ECDHE-RSA-AES128-SHA256:ECDHE-ECDSA-AES128-SHA:ECDHE-RSA-AES256-SHA384:ECDHE-RSA-AES128-SHA:ECDHE-ECDSA-AES256-SHA384:ECDHE-ECDSA-AES256-SHA:ECDHE-RSA-AES256-SHA:DHE-RSA-AES128-SHA256:DHE-RSA-AES128-SHA:DHE-RSA-AES256-SHA256:DHE-RSA-AES256-SHA:ECDHE-ECDSA-DES-CBC3-SHA:ECDHE-RSA-DES-CBC3-SHA:EDH-RSA-DES-CBC3-SHA:AES128-GCM-SHA256:AES256-GCM-SHA384:AES128-SHA256:AES256-SHA256:AES128-SHA:AES256-SHA:DES-CBC3-SHA:!DSS
+        	tune.bufsize 16384
+        	tune.maxaccept 192
+        	tune.maxrewrite 1024
+        	tune.ssl.default-dh-param 2048
+        	tune.ssl.cachesize 320000
+        	tune.ssl.lifetime 300
+        	tune.ssl.maxrecord 1419
+        	tune.zlib.memlevel 9
+        	user root
+
+        defaults
+        	default-server inter 10s
+        	default-server maxconn 128
+        	log global
+        	mode http
+        	option abortonclose
+        	option dontlognull
+        	option dontlog-normal
+        	option forwardfor except 127.0.0.0/8
+        	option http-server-close
+        	option httplog
+        	option redispatch
+        	retries 3
+        	timeout check 15s
+        	timeout client 40s
+        	timeout connect 5s
+        	timeout http-keep-alive 15s
+        	timeout http-request 4s
+        	timeout queue 120s
+        	timeout server 40s
+
+        frontend http
+        	acl acl_secure_path path_beg /admin /login /logout /profile
+        	backlog 1024
+        	bind 0.0.0.0:80 nice 15
+        	default_backend http
+        	maxconn 1024
+        	rate-limit sessions 1024
+        	redirect scheme https code 301 if acl_secure_path !{ ssl_fc }
+
+        frontend https
+        	backlog 1024
+        	bind 0.0.0.0:443 nice 30 ssl no-sslv3 no-tls-tickets crt /usr/local/etc/haproxy/localhost.localdomain.crt
+        	default_backend http
+        	maxconn 1024
+        	rate-limit sessions 144
+
+        backend http
+        	fullconn 1024
+        	option httpchk HEAD / HTTP/1.1\r\nHost:\ localhost.localdomain\r\nConnection:\ close\r\nUser-Agent:\ HAProxy\r\nAccept-Encoding:\ gzip,\ deflate
+        	#reqrep ^([^\ :]*\ )/\ (.*) \1/admin/\ \2
+        	#reqrep ^([^\ :]*\ )/search((?:\?|\/).*)?(.*)? \1/gsa\2\3
+        	reqrep ^([^\ :]*\ /gsa(?:\/|\?).*)(start=-[0-9]*)(.*)? \1start=0\3
+        	reqrep ^([^\ :]*\ /gsa(?:\/|\?).*)(date:A:[SRL]:d1)(.*)? \1timestamp.asc\3
+        	reqrep ^([^\ :]*\ /gsa(?:\/|\?).*)(date%3AA%3A[SRL]%3Ad1)(.*)? \1timestamp.asc\3
+        	reqrep ^([^\ :]*\ /gsa(?:\/|\?).*)(date:D:[SRL]:d1)(.*)? \1timestamp.desc\3
+        	reqrep ^([^\ :]*\ /gsa(?:\/|\?).*)(date%3AD%3A[SRL]%3Ad1)(.*)? \1timestamp.desc\3
+        	reqrep ^([^\ :]*\ /gsa(?:\/\?|\?).*(?!(?:\?|&)site=))(site=)([^&%|]*)((?:\||%7C)[^&\n]*)?(&.*)? \1fields.label=\3\5
+        	server fess_1 fess_1:8080 port 8080 check
+      HAPROXY_CERTIFICATE: |-
+        -----BEGIN PRIVATE KEY-----
+        MIIEvgIBADANBgkqhkiG9w0BAQEFAASCBKgwggSkAgEAAoIBAQDxMCu2FVXj9ahx
+        FaU4YPC6JYWnirt1F8mMBO+ChMcZe//DCWMkNNcYx4DixaQxozno1Qno1K6JCs3m
+        1PqsGIL1nEZec9rlXJeo+cVpLx2pnoAQRJt/OffcJZqquBCEk6Ckvh751VIN3ldE
+        iUbhNdhNzVWHlYp7ItSyzDKL4cNSKZqNM3A7D3xkE52wgWFKv+4cxPQGX/yu1GMj
+        gPFGIq56nLT1c7zMLQBpR/VNSqAPRNblTmzN8xwfitpzzS5CeCaAHiaI5AQpemMB
+        hExIN01B/O9rdFatuCWVRkLyirUt+vDKNQ9GtB38yXzf7xYKqnmSzmjhrLKETbZe
+        Ux9FgpgRAgMBAAECggEBAIYrHtXOrpX+LTKjMOLZAnD6uIwIH9m2Xtb2U+pORJeH
+        pDJyAWW9wz40lR0RhxJZ07gS8s1Dqsfva7USG1Qq2ocY5Qhb+JQI2xETyN6HaD/Y
+        PTNPhxTSQXCEtrJrbDzkBsQ+QusF4Px4CCHHH9feZTJ6nC6tYHi5WosQDrpD36zP
+        BXYQHxoLicxV+rdBtHUtK2u9KC1WxE43l9FDZG7nJ+8vL/MQaWO4vQQgOUtz+VMV
+        jkS7EMW5U2Odb/dLFH/4+my015sL7ajboM7r8m1vyuDVdNayXC6wOvMMvUs56Ymr
+        4d7vEsYIglYPlb5nIz7dlyeBWWeKsJ1mrR0RUYLY+EECgYEA/eSORC/mJGt8CCfb
+        Ydej/fVVp0AwCbWyt+pX8Ol0KVbnwPZ407qytxeO0Ja9UuA5bp/dvyBdyHKjigMd
+        zPPS03Bi/XKogjfgHK22sc0ZDVAWLKXnc3puHV4zG4q2t+KIRj2htY3NLxUt9+mP
+        Vp8yqBsgCIawwk6PlXLcFQgHaEkCgYEA8zCfH/4jZaovtS4eQ+Esk3Nb+dy+BSc1
+        3SEi81rzPsixuNki3Lyb9zK/Y9fHLZsFsisgYO+4+gMkQPrMxokbfMYwKIwD5xUs
+        hg4OPPzaxDTVHe4Jojf75rKCW8TGxpbnL1thSvt/GMQFTLsEo99hgJSr3PfTgwDr
+        34TZk0QHgYkCgYAD0txdpIcHx2Kf0NHaAGBk47v9f9b5XnYplOrsIufv83IcEtow
+        /h/Q6Bbrh0mkpOHYi6nQRhGDgk56Np/NRWLIcmnbPU3SYDsM04Tr2pXlAG7FD16T
+        +6UK5i9I2+bykAPTYvw7er47VktR73+MI2uk4nuyBS1GT96Ttp4f5vYNmQKBgQCm
+        q8gjMRYpcz5HOlhbxVO7qvB6iqNg/MKZz0AY8ViMyxeizI5sIofyH8G0OAq2YuzA
+        c3Y5eZKZJtYOAtWdrBI+rcYLxApYsdZV+gQgIFv+5Qa7AI1xtFTcg7N8GZzyNjIz
+        7rj7nuo4mv/W2sYPWeWFLl+rjd5UhqkiA/bqS1GpoQKBgHCdamzOqA4u1uLClCRc
+        dzsFrJYpE07OB6CvXtX1M2kSOkVK15FgjMviv76V1m6VvaHxhphgt4IyomN2GrQL
+        2dau2h2TpocTiGBgFYrh0XiUrN1dvzju4l2gziz79h0Bif8DYmZOmnBnKbhVMxkZ
+        1z5IDuli+nWYpJ7HmCIoi+Rh
+        -----END PRIVATE KEY-----
+        -----BEGIN CERTIFICATE-----
+        MIIC5zCCAc+gAwIBAgIJAJT2WaKk6zHNMA0GCSqGSIb3DQEBCwUAMCAxHjAcBgNV
+        BAMMFWxvY2FsaG9zdC5sb2NhbGRvbWFpbjAeFw0xNzEwMDkwMDU1MTlaFw0xODEw
+        MDkwMDU1MTlaMCAxHjAcBgNVBAMMFWxvY2FsaG9zdC5sb2NhbGRvbWFpbjCCASIw
+        DQYJKoZIhvcNAQEBBQADggEPADCCAQoCggEBAPEwK7YVVeP1qHEVpThg8LolhaeK
+        u3UXyYwE74KExxl7/8MJYyQ01xjHgOLFpDGjOejVCejUrokKzebU+qwYgvWcRl5z
+        2uVcl6j5xWkvHamegBBEm38599wlmqq4EISToKS+HvnVUg3eV0SJRuE12E3NVYeV
+        insi1LLMMovhw1Ipmo0zcDsPfGQTnbCBYUq/7hzE9AZf/K7UYyOA8UYirnqctPVz
+        vMwtAGlH9U1KoA9E1uVObM3zHB+K2nPNLkJ4JoAeJojkBCl6YwGETEg3TUH872t0
+        Vq24JZVGQvKKtS368Mo1D0a0HfzJfN/vFgqqeZLOaOGssoRNtl5TH0WCmBECAwEA
+        AaMkMCIwIAYDVR0RBBkwF4IVbG9jYWxob3N0LmxvY2FsZG9tYWluMA0GCSqGSIb3
+        DQEBCwUAA4IBAQAtb+7E0ABsSHEYCZoBeAfEXnRwgsWIYGC/As/tumhGLNuRmBfR
+        Rik9CXjsGSGpENdq8Dh2tLKI4QqI9zsNKd4tu2pWcPDi5C5plO/Jt9QO7dQvzCRb
+        gxeDyZ0GcaHEei4AyHeeBWp+t3ZHGDh9NtuDY2fHPU2S/smfzfmB3dGZI9wMRjC4
+        +tpebGK/aLsEstIwfzXu41pg8jvr9qBN96rsjrpCiCw3fY7vw+O2DMkxPmqcD1yd
+        Ziy/3c9kuUKEn6V5G/HiSNtTBoMw7zx8mu22roG8Lg8VzcJEAe0BSG/pbdVsLBn0
+        zWcWNxnDYg3tH+w0tUWXc1FO6YxzEL+8xvCy
+        -----END CERTIFICATE-----
+    image: "haproxy:1.7.9-alpine"
     links:
       - "fess"
     networks:
       - "fess_t1"
     ports:
-      - "80:8080"
-      - "443:2015"
+      - "80:80"
+      - "443:443"
     restart: "always"
+    ulimits:
+      nofile:
+        soft: 524288
+        hard: 1048576
+      nproc: 65535
   fess:
     build: "./fess"
     networks:
