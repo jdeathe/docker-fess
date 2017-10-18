@@ -136,7 +136,7 @@
 		<c:forEach var="item" varStatus="s" items="${relatedContents}">
 			<div class="row">
 				<div class="col-md-12">
-					${relatedContent}
+					${item}
 				</div>
 			</div>
 		</c:forEach>
