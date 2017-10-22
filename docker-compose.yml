@@ -70,10 +70,10 @@ services:
         	#reqrep ^([^\ :]*\ )/\ (.*) \1/admin/\ \2
         	#reqrep ^([^\ :]*\ )/search((?:\?|\/).*)?(.*)? \1/gsa\2\3
         	reqrep ^([^\ :]*\ /gsa(?:\/|\?).*)(start=-[0-9]*)(.*)? \1start=0\3
-        	reqrep ^([^\ :]*\ /gsa(?:\/|\?).*)(date:A:[SRL]:d1)(.*)? \1timestamp.asc\3
-        	reqrep ^([^\ :]*\ /gsa(?:\/|\?).*)(date%3AA%3A[SRL]%3Ad1)(.*)? \1timestamp.asc\3
-        	reqrep ^([^\ :]*\ /gsa(?:\/|\?).*)(date:D:[SRL]:d1)(.*)? \1timestamp.desc\3
-        	reqrep ^([^\ :]*\ /gsa(?:\/|\?).*)(date%3AD%3A[SRL]%3Ad1)(.*)? \1timestamp.desc\3
+        	reqrep ^([^\ :]*\ /gsa(?:\/|\?).*)(date:A:[SRL]:d1)(.*)? \1last_modified.asc\3
+        	reqrep ^([^\ :]*\ /gsa(?:\/|\?).*)(date%3AA%3A[SRL]%3Ad1)(.*)? \1last_modified.asc\3
+        	reqrep ^([^\ :]*\ /gsa(?:\/|\?).*)(date:D:[SRL]:d1)(.*)? \1last_modified.desc\3
+        	reqrep ^([^\ :]*\ /gsa(?:\/|\?).*)(date%3AD%3A[SRL]%3Ad1)(.*)? \1last_modified.desc\3
         	reqrep ^([^\ :]*\ /gsa(?:\/\?|\?).*(?!(?:\?|&)site=))(site=)([^&%|]*)((?:\||%7C)[^&\n]*)?(&.*)? \1fields.label=\3\5
         	server fess_1 fess_1:8080 port 8080 check
       HAPROXY_CERTIFICATE: |-
