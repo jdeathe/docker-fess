@@ -1,4 +1,4 @@
-version: "2.0"
+version: "3.0"
 networks:
   fess_t1:
     driver: "bridge"
@@ -124,8 +124,6 @@ services:
         zWcWNxnDYg3tH+w0tUWXc1FO6YxzEL+8xvCy
         -----END CERTIFICATE-----
     image: "haproxy:1.7.9-alpine"
-    links:
-      - "fess"
     networks:
       - "fess_t1"
     ports:
@@ -142,5 +140,5 @@ services:
     networks:
       fess_t1:
         aliases:
-          - "fess"
+          - "fess_1"
     restart: "always"
