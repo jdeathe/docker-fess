@@ -77,12 +77,3 @@
 		<code class="highlighter-rouge">Fess~0.5</code>.
 	</dd>
 </dl>
-<h2>Miscellaneous</h2>
-<dl>
-	<dt>Add to Browser Search Engines</dt>
-	<dd>
-		<a href="#" onclick='window.external.AddSearchProvider("/osdd/");return false;'>Add this</a>
-		 search engine to your browser.
-	</dd>
-</dl>
-
