@@ -1,6 +1,6 @@
 FROM centos:7.4.1708
 
-ARG FESS_VERSION="12.1.4"
+ARG FESS_VERSION="12.1.5"
 ARG FESS_FILENAME="fess-${FESS_VERSION}.zip"
 ARG FESS_RELEASE_URI="https://github.com/codelibs/fess/releases/download/fess-${FESS_VERSION}/${FESS_FILENAME}"
 
