@@ -123,7 +123,7 @@ services:
         Ziy/3c9kuUKEn6V5G/HiSNtTBoMw7zx8mu22roG8Lg8VzcJEAe0BSG/pbdVsLBn0
         zWcWNxnDYg3tH+w0tUWXc1FO6YxzEL+8xvCy
         -----END CERTIFICATE-----
-    image: "haproxy:1.7.9-alpine"
+    image: "haproxy:1.8.13-alpine"
     networks:
       - "fess_t1"
     ports:
