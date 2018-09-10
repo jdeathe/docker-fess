@@ -19,7 +19,7 @@ h1.mainLogo{height:60px;margin-bottom:1em;}
 #searchOptions{z-index:1050;}
 #searchOptions .container{color:#1e1e1e;background-color:rgba(247,247,249,.88);padding-top:20px;}
 #searchOptions.active .container{bottom:auto;}
-#query.form-control{color:rgba(255,255,255,.75);background-color:rgba(255,255,255,.13);border:.0625rem solid transparent;}
+#query.form-control{color:rgba(255,255,255,.75);background-color:rgba(255,255,255,.13);border:0 solid transparent;}
 #query.form-control:focus{color:rgba(255,255,255,.88);background-color:rgba(255,255,255,.15);border:.0625rem solid rgba(255,255,255,.25);}
 .login-page,.register-page{background-color:#ecf0f5!important;}
 .login-box-msg,.register-box-msg{font-weight:bold;}
