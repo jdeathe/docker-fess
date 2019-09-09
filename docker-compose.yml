@@ -4,16 +4,18 @@ networks:
     driver: "bridge"
 services:
   proxy:
-    command: '"printf -- \"%s\n\" \"$${HAPROXY_CERTIFICATE}\" > /usr/local/etc/haproxy/localhost.localdomain.crt; printf -- \"%s\n\" \"$${HAPROXY_CONFIG}\" > /usr/local/etc/haproxy/haproxy.cfg && haproxy -c -f /usr/local/etc/haproxy/haproxy.cfg && /docker-entrypoint.sh haproxy -f /usr/local/etc/haproxy/haproxy.cfg"'
+    command: '"printf -- \"%s\n\" \"$${HAPROXY_CERTIFICATE}\" > /usr/local/etc/haproxy/localhost.crt; printf -- \"%s\n\" \"$${HAPROXY_CONFIG}\" > /usr/local/etc/haproxy/haproxy.cfg && haproxy -c -f /usr/local/etc/haproxy/haproxy.cfg && /docker-entrypoint.sh haproxy -f /usr/local/etc/haproxy/haproxy.cfg"'
     entrypoint: "/bin/sh -c"
     environment:
       HAPROXY_CONFIG: |-
         global
         	group root
-        	log 127.0.0.1 local2
+        	log stderr format raw daemon err
+        	log stdout format raw daemon info warning
         	maxconn 4096
         	maxsslrate 128
         	nbproc 1
+        	nbthread 4
         	spread-checks 4
         	ssl-default-bind-ciphers ECDHE-ECDSA-CHACHA20-POLY1305:ECDHE-RSA-CHACHA20-POLY1305:ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384:DHE-RSA-AES128-GCM-SHA256:DHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-AES128-SHA256:ECDHE-RSA-AES128-SHA256:ECDHE-ECDSA-AES128-SHA:ECDHE-RSA-AES256-SHA384:ECDHE-RSA-AES128-SHA:ECDHE-ECDSA-AES256-SHA384:ECDHE-ECDSA-AES256-SHA:ECDHE-RSA-AES256-SHA:DHE-RSA-AES128-SHA256:DHE-RSA-AES128-SHA:DHE-RSA-AES256-SHA256:DHE-RSA-AES256-SHA:ECDHE-ECDSA-DES-CBC3-SHA:ECDHE-RSA-DES-CBC3-SHA:EDH-RSA-DES-CBC3-SHA:AES128-GCM-SHA256:AES256-GCM-SHA384:AES128-SHA256:AES256-SHA256:AES128-SHA:AES256-SHA:DES-CBC3-SHA:!DSS
         	ssl-default-server-ciphers ECDHE-ECDSA-CHACHA20-POLY1305:ECDHE-RSA-CHACHA20-POLY1305:ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384:DHE-RSA-AES128-GCM-SHA256:DHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-AES128-SHA256:ECDHE-RSA-AES128-SHA256:ECDHE-ECDSA-AES128-SHA:ECDHE-RSA-AES256-SHA384:ECDHE-RSA-AES128-SHA:ECDHE-ECDSA-AES256-SHA384:ECDHE-ECDSA-AES256-SHA:ECDHE-RSA-AES256-SHA:DHE-RSA-AES128-SHA256:DHE-RSA-AES128-SHA:DHE-RSA-AES256-SHA256:DHE-RSA-AES256-SHA:ECDHE-ECDSA-DES-CBC3-SHA:ECDHE-RSA-DES-CBC3-SHA:EDH-RSA-DES-CBC3-SHA:AES128-GCM-SHA256:AES256-GCM-SHA384:AES128-SHA256:AES256-SHA256:AES128-SHA:AES256-SHA:DES-CBC3-SHA:!DSS
@@ -41,12 +43,12 @@ services:
         	option redispatch
         	retries 3
         	timeout check 15s
-        	timeout client 40s
+        	timeout client 30s
         	timeout connect 5s
-        	timeout http-keep-alive 15s
+        	timeout http-keep-alive 2s
         	timeout http-request 4s
         	timeout queue 120s
-        	timeout server 40s
+        	timeout server 30s
 
         frontend http
         	acl acl_secure_path path_beg /admin /login /logout /profile
@@ -59,22 +61,22 @@ services:
 
         frontend https
         	backlog 1024
-        	bind 0.0.0.0:443 nice 30 ssl no-sslv3 no-tls-tickets crt /usr/local/etc/haproxy/localhost.localdomain.crt
+        	bind 0.0.0.0:443 nice 30 ssl no-sslv3 no-tls-tickets crt /usr/local/etc/haproxy/localhost.crt
         	default_backend http
         	maxconn 1024
         	rate-limit sessions 144
 
         backend http
-        	fullconn 1024
+        	fullconn 1000
         	option httpchk HEAD / HTTP/1.1\r\nHost:\ localhost.localdomain\r\nConnection:\ close\r\nUser-Agent:\ HAProxy\r\nAccept-Encoding:\ gzip,\ deflate
-        	#reqrep ^([^\ :]*\ )/\ (.*) \1/admin/\ \2
-        	#reqrep ^([^\ :]*\ )/search((?:\?|\/).*)?(.*)? \1/gsa\2\3
-        	reqrep ^([^\ :]*\ /gsa(?:\/|\?).*)(start=-[0-9]*)(.*)? \1start=0\3
-        	reqrep ^([^\ :]*\ /gsa(?:\/|\?).*)(date:A:[SRL]:d1)(.*)? \1last_modified.asc\3
-        	reqrep ^([^\ :]*\ /gsa(?:\/|\?).*)(date%3AA%3A[SRL]%3Ad1)(.*)? \1last_modified.asc\3
-        	reqrep ^([^\ :]*\ /gsa(?:\/|\?).*)(date:D:[SRL]:d1)(.*)? \1last_modified.desc\3
-        	reqrep ^([^\ :]*\ /gsa(?:\/|\?).*)(date%3AD%3A[SRL]%3Ad1)(.*)? \1last_modified.desc\3
-        	reqrep ^([^\ :]*\ /gsa(?:\/\?|\?).*(?!(?:\?|&)site=))(site=)([^&%|]*)((?:\||%7C)[^&\n]*)?(&.*)? \1fields.label=\3\5
+        	#http-request replace-uri ^([^\ :]*\ )/\ (.*) \1/admin/\ \2
+        	#http-request replace-uri ^([^\ :]*\ )/search((?:\?|\/).*)?(.*)? \1/gsa\2\3
+        	http-request replace-uri ^([^\ :]*\ /gsa(?:\/|\?).*)(start=-[0-9]*)(.*)? \1start=0\3
+        	http-request replace-uri ^([^\ :]*\ /gsa(?:\/|\?).*)(date:A:[SRL]:d1)(.*)? \1last_modified.asc\3
+        	http-request replace-uri ^([^\ :]*\ /gsa(?:\/|\?).*)(date%3AA%3A[SRL]%3Ad1)(.*)? \1last_modified.asc\3
+        	http-request replace-uri ^([^\ :]*\ /gsa(?:\/|\?).*)(date:D:[SRL]:d1)(.*)? \1last_modified.desc\3
+        	http-request replace-uri ^([^\ :]*\ /gsa(?:\/|\?).*)(date%3AD%3A[SRL]%3Ad1)(.*)? \1last_modified.desc\3
+        	http-request replace-uri ^([^\ :]*\ /gsa(?:\/\?|\?).*(?!(?:\?|&)site=))(site=)([^&%|]*)((?:\||%7C)[^&\n]*)?(&.*)? \1fields.label=\3\5
         	server fess_1 fess_1:8080 port 8080 check
       HAPROXY_CERTIFICATE: |-
         -----BEGIN PRIVATE KEY-----
@@ -131,7 +133,7 @@ services:
         yBwHkhAPuwDaJsaa94QOalBQt4zWgEfW2lRe/MnKWdUjutrIQpB1xiOVllbiSvbG
         5DdlkB/jHf8UHoQ5GJezddIUhUvuprA7kwIBAg==
         -----END DH PARAMETERS-----
-    image: "haproxy:1.8.13-alpine"
+    image: "haproxy:2.0.5-alpine"
     networks:
       - "fess_t1"
     ports:
