@@ -11,7 +11,7 @@ RUN rpm --rebuilddb \
 		java-1.8.0-openjdk-headless \
 		unzip \
 	&& curl -sOL ${FESS_RELEASE_URI} \
-	&& unzip ${FESS_FILENAME} -d /opt \
+	&& unzip -q ${FESS_FILENAME} -d /opt \
 	&& rm ${FESS_FILENAME} \
 	&& ln -s /opt/fess-${FESS_VERSION} /opt/fess \
 	&& yum clean all \
