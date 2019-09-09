@@ -1,4 +1,4 @@
-FROM centos:7.5.1804
+FROM centos:7.6.1810
 
 ARG FESS_VERSION="12.3.0"
 ARG FESS_FILENAME="fess-${FESS_VERSION}.zip"
@@ -11,7 +11,7 @@ RUN rpm --rebuilddb \
 		java-1.8.0-openjdk-headless \
 		unzip \
 	&& curl -sOL ${FESS_RELEASE_URI} \
-	&& unzip ${FESS_FILENAME} -d /opt \
+	&& unzip -q ${FESS_FILENAME} -d /opt \
 	&& rm ${FESS_FILENAME} \
 	&& ln -s /opt/fess-${FESS_VERSION} /opt/fess \
 	&& yum clean all \
