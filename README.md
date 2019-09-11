@@ -14,12 +14,18 @@ By default, Docker host ports `80` and `443` are required by the reverse proxy c
 
 ## Usage
 
-Clone this repository and then run the following to start the project named `fess`.
+Clone this repository and then run the following to start the project.
 
 ```
-$ docker-compose -p fess up -d
+$ docker-compose up -d
 ```
 
-*Note:* It takes some time for the embedded elastic search service to start, dependent on system performance.
+> *Note:* It takes some time for the embedded elastic search service to start, dependent on system performance.
+
+Tail the System log file. Proceed once you see a 'Boot successful' info message.
+
+```
+$ docker-compose exec fess tail -f logs/server_0.log
+```
 
 Point your browser at: `http://{docker-host}/`
