@@ -42,7 +42,7 @@
 			<la:form styleId="login" method="post">
 				<div class="form-group has-feedback">
 					<div class="input-group">
-						<span class="input-group-addon"><i class="fa fa-user fa-fw"></i></span>
+						<span class="input-group-addon"><em class="fa fa-user fa-fw"></em></span>
 						<c:set var="ph_username">
 							<la:message key="labels.login.placeholder_username" />
 						</c:set>
@@ -52,7 +52,7 @@
 				</div>
 				<div class="form-group has-feedback">
 					<div class="input-group">
-						<span class="input-group-addon"><i class="fa fa-lock fa-fw"></i></span>
+						<span class="input-group-addon"><em class="fa fa-lock fa-fw"></em></span>
 						<c:set var="ph_password">
 							<la:message key="labels.login.placeholder_password" />
 						</c:set>
@@ -64,7 +64,7 @@
 					<button type="submit" name="login"
 						class="btn btn-primary btn-block btn-flat"
 						value="<la:message key="labels.login"/>">
-						<i class="fa fa-sign-in"></i>
+						<em class="fa fa-sign-in"></em>
 						<la:message key="labels.login" />
 					</button>
 				</div>
@@ -75,7 +75,7 @@
 	<!-- /.login-box -->
 	<input type="hidden" id="contextPath" value="${contextPath}" />
 	<script type="text/javascript"
-		src="${fe:url('/js/admin/jquery-3.3.1.min.js')}"></script>
+		src="${fe:url('/js/admin/jquery-3.4.0.min.js')}"></script>
 	<script type="text/javascript" src="${fe:url('/js/admin/bootstrap.min.js')}"></script>
 	<script type="text/javascript" src="${fe:url('/js/login.js')}"></script>
 </body>
